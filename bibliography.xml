@@ -125,6 +125,13 @@
     <author>Pierre Loidreau and Nicolas Sendrier</author>
     <link>http://perso.univ-rennes1.fr/pierre.loidreau/articles/ieee-it/Cles_Faibles.pdf</link>
   </reference>
+
+  <reference name="Merkle Signatures">
+    <title>Merkle Signatures with Virtually Unlimited Signature Capacity</title>
+    <author>Johannes Buchmann, Erik Dahmen, Elena Klintsevich, Katsuyuki Okeya, and Camille Vuillaume</author>
+    <link>https://www.cdc.informatik.tu-darmstadt.de/reports/reports/BDKOV07.pdf</link>
+  </reference>
+  
   <reference name="NIST IR7896">
     <title>Third-Round Report of the SHA-3 Cryptographic Hash Algorithm Competition</title>
     <author>National Institute of Standards and Technology (NIST)</author>

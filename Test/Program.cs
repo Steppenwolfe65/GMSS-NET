@@ -17,7 +17,7 @@ namespace Test
         {
             ConsoleUtils.SizeConsole(80, 60);
             ConsoleUtils.CenterConsole();
-            Console.Title = "Rainbow Test Suite";
+            Console.Title = "GMSS Test Suite";
 
             // header
             Console.WriteLine("**********************************************");
@@ -135,17 +135,17 @@ namespace Test
         #region Timing Tests
         static void KeyGenSpeed(int Iterations = 4)
         {
-            Console.WriteLine(string.Format("N | L: Key creation average time over {0} passes:", Iterations));
+            Console.WriteLine(string.Format("N 2^10: Key creation average time over {0} passes:", Iterations));
             Stopwatch runTimer = new Stopwatch();
 
             double elapsed = KeyGenerator(Iterations, GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P10));
-            Console.WriteLine(string.Format("N33 L5: avg. {0} ms", elapsed / Iterations, Iterations));
+            Console.WriteLine(string.Format("N2P10: avg. {0} ms", elapsed / Iterations, Iterations));
             Console.WriteLine(string.Format("{0} keys created in: {1} ms", Iterations, elapsed));
             Console.WriteLine(string.Format("Creation Rate is {0} keys per second", (int)(1000.0 / (elapsed / Iterations))));
             Console.WriteLine("");
         }
 
-        static double KeyGenerator(int Iterations, GMSSParameters Param)//, new CTRPrng(BlockCiphers.RDX, SeedGenerators.CSPRsg, 16384, 16)
+        static double KeyGenerator(int Iterations, GMSSParameters Param)
         {
             // new SP20Prng(SeedGenerators.CSPRsg, 16384, 32, 10) // salsa20
             GMSSKeyGenerator mkgen = new GMSSKeyGenerator(Param);
@@ -162,25 +162,15 @@ namespace Test
 
         static void SignSpeed(int Iterations = 10)
         {
-            Console.WriteLine(string.Format("N | L: Sign and Verify operations time over {0} passes:", Iterations));
+            Console.WriteLine(string.Format("N 2^10: Sign and Verify operations time over {0} passes:", Iterations));
 
             double elapsed = SignTest(Iterations, GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P10));
-            Console.WriteLine(string.Format("N33 L5: messages signed avg. {0} ms", elapsed / Iterations, Iterations));
+            Console.WriteLine(string.Format("N2P10: messages signed avg. {0} ms", elapsed / Iterations, Iterations));
             Console.WriteLine(string.Format("{0} messages signed in: {1} ms", Iterations, elapsed));
             Console.WriteLine(string.Format("Sign Rate is {0} per second", (int)(1000.0 / (elapsed / Iterations))));
             Console.WriteLine("");
             elapsed = SignTest(Iterations, GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P10), false);
-            Console.WriteLine(string.Format("N33 L5: messages verified avg. {0} ms", elapsed / Iterations, Iterations));
-            Console.WriteLine(string.Format("{0} messages verified in: {1} ms", Iterations, elapsed));
-            Console.WriteLine(string.Format("Verify Rate is {0} per second", (int)(1000.0 / (elapsed / Iterations))));
-            Console.WriteLine("");
-            elapsed = SignTest(Iterations, GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P20));
-            Console.WriteLine(string.Format("N49 L5: messages signed avg. {0} ms", elapsed / Iterations, Iterations));
-            Console.WriteLine(string.Format("{0} messages signed in: {1} ms", Iterations, elapsed));
-            Console.WriteLine(string.Format("Sign Rate is {0} per second", (int)(1000.0 / (elapsed / Iterations))));
-            Console.WriteLine("");
-            elapsed = SignTest(Iterations, GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P20), false);
-            Console.WriteLine(string.Format("N49 L5: messages verified avg. {0} ms", elapsed / Iterations, Iterations));
+            Console.WriteLine(string.Format("N2P10: messages verified avg. {0} ms", elapsed / Iterations, Iterations));
             Console.WriteLine(string.Format("{0} messages verified in: {1} ms", Iterations, elapsed));
             Console.WriteLine(string.Format("Verify Rate is {0} per second", (int)(1000.0 / (elapsed / Iterations))));
             Console.WriteLine("");
@@ -188,7 +178,7 @@ namespace Test
 
         static double SignTest(int Iterations, GMSSParameters Param, bool Sign = true)
         {
-            Stopwatch runTimer = new Stopwatch();//, new CTRPrng(BlockCiphers.RDX, SeedGenerators.CSPRsg, 16384, 16)
+            Stopwatch runTimer = new Stopwatch();
             byte[] code;
             GMSSKeyGenerator mkgen = new GMSSKeyGenerator(Param);
             IAsymmetricKeyPair akp = mkgen.GenerateKeyPair();

@@ -1,7 +1,5 @@
 ﻿#region Directives
 using System;
-using System.Diagnostics;
-using VTDev.Libraries.CEXEngine.Crypto.Prng;
 using System.IO;
 #endregion
 

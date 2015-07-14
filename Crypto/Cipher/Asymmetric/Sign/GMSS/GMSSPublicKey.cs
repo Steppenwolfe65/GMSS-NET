@@ -39,8 +39,8 @@ using VTDev.Libraries.CEXEngine.Tools;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
@@ -48,7 +48,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 {
     /// <summary>
     /// A Generalized Merkle Signature Scheme Public Key
-    /// </summary>//https://www.cdc.informatik.tu-darmstadt.de/reports/reports/BDKOV07.pdf
+    /// </summary>
     public sealed class GMSSPublicKey : IAsymmetricKey
     {
         #region Constants
@@ -297,7 +297,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
                         Array.Clear(_publicKey, 0, _publicKey.Length);
                         _publicKey = null;
                     }
-                    
                 }
                 catch { }
 

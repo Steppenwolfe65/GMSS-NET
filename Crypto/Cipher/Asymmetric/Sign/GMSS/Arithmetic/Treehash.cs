@@ -148,7 +148,8 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS.Arithmeti
         /// Reconstructs a Treehash from its <c>byte</c> array representation.
         /// </summary>
         /// 
-        /// <param name="Key">The encoded key array</param>
+        /// <param name="Digest">The hash digest</param>
+        /// <param name="TreeArray">The encoded tree hash</param>
         public Treehash(IDigest Digest, byte[] TreeArray) :
             this(Digest, new MemoryStream(TreeArray))
         {

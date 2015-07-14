@@ -495,7 +495,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS.Arithmeti
         }
 
         /// <summary>
-        /// This method returns the least integer that is greater or equal to the logarithm to the base 2 of an integer <c>intValue</>
+        /// This method returns the least integer that is greater or equal to the logarithm to the base 2 of an integer <c>Value</c>
         /// </summary>
         /// 
         /// <param name="Value">An integer</param>

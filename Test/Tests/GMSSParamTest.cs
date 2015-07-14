@@ -5,12 +5,12 @@ using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS;
 namespace Test.Tests
 {
     /// <summary>
-    /// Test the validity of the Rainbow Parameters implementation
+    /// Test the validity of the GMSS Parameters implementation
     /// </summary>
     public class GMSSParamTest : ITest
     {
         #region Constants
-        private const string DESCRIPTION = "Test the validity of the Rainbow Parameters implementation";
+        private const string DESCRIPTION = "Test the validity of the GMSS Parameters implementation";
         private const string FAILURE = "FAILURE! ";
         private const string SUCCESS = "SUCCESS! Parameters tests have executed succesfully.";
         #endregion
@@ -33,7 +33,7 @@ namespace Test.Tests
 
         #region Public Methods
         /// <summary>
-        /// Tests the validity of the Rainbow Parameters implementation
+        /// Tests the validity of the GMSS Parameters implementation
         /// </summary>
         /// 
         /// <returns>State</returns>

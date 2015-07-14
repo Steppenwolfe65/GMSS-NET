@@ -44,8 +44,8 @@ using VTDev.Libraries.CEXEngine.Utility;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
@@ -61,7 +61,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
     /// byte[] code;
     /// byte[] data = new byte[100];
     /// 
-    /// GMSSParameters kpm = GMSSParamSets.GMSSN33L5;
+    /// GMSSKeyGenerator kpm = (GMSSParameters)GMSSParamSets.GMSSN2P10.DeepCopy();
     /// GMSSKeyGenerator gen = new GMSSKeyGenerator(kpm);
     /// IAsymmetricKeyPair keyPair = gen.GenerateKeyPair();
     ///
@@ -75,7 +75,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
     /// // test the message for validity
     /// using (GMSSSign sign = new GMSSSign(kpm))
     /// {
-    ///     sign.Initialize(new kp.PublicKey);
+    ///     sign.Initialize(kp.PublicKey);
     ///     bool valid = sign.Verify(data, 0, data.Length, code);
     /// }
     /// </code>
@@ -107,7 +107,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 
         #region Fields
         private IAsymmetricKey _asmKey;
-        private IDigest _dgtEngine;
         private bool _isDisposed = false;
         private bool _isInitialized = false;
         // The raw GMSS public key
@@ -132,11 +131,17 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         private GMSSParameters _gmssPS;
         // The PRNG
         private GMSSRandom _gmssRandom;
-        // XXX needed? Source of randomness
-        private IRandom _secRand;
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Get: The cipher has been initialized with a key
+        /// </summary>
+        public bool IsInitialized
+        {
+            get { return _isInitialized; }
+        }
+
         /// <summary>
         /// Get: This class is initialized for Signing with the Private key
         /// </summary>
@@ -206,6 +211,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             Reset();
             _asmKey = AsmKey;
             _isInitialized = true;
+
             if (AsmKey is GMSSPrivateKey)
                 InitSign();
             else
@@ -220,6 +226,15 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             //_rndEngine.Reset();
         }
 
+        /// <summary>
+        /// Get the signing code for a stream
+        /// </summary>
+        /// 
+        /// <param name="InputStream">The stream containing the data</param>
+        /// 
+        /// <returns>The encrypted hash code</returns>
+        /// 
+        /// <exception cref="CryptoAsymmetricSignException">Thrown if an invalid key is used, or signer has not been initialized</exception>
         public byte[] Sign(Stream InputStream)
         {
             if (!_isInitialized)
@@ -614,11 +629,33 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             {
                 try
                 {
-                    if (_dgtEngine != null)
+                    if (_msgDigestTrees != null)
                     {
-                        _dgtEngine.Dispose();
-                        _dgtEngine = null;
+                        _msgDigestTrees.Dispose();
+                        _msgDigestTrees = null;
                     }
+                    if (_gmssRandom != null)
+                    {
+                        _gmssRandom.Dispose();
+                        _gmssRandom = null;
+                    }
+                    if (_index != null)
+                    {
+                        Array.Clear(_index, 0, _index.Length);
+                        _index = null;
+                    }
+                    if (_currentAuthPaths != null)
+                    {
+                        Array.Clear(_currentAuthPaths, 0, _currentAuthPaths.Length);
+                        _currentAuthPaths = null;
+                    }
+                    if (_subtreeRootSig != null)
+                    {
+                        Array.Clear(_subtreeRootSig, 0, _subtreeRootSig.Length);
+                        _subtreeRootSig = null;
+                    }
+                    _mdLength = 0;
+                    _numLayer = 0;
                 }
                 catch { }
 

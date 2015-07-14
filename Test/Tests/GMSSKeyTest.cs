@@ -6,12 +6,12 @@ using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS;
 namespace Test.Tests
 {
     /// <summary>
-    /// Test the validity of the Rainbow Encryption Key implementation
+    /// Test the validity of the GMSS Encryption Key implementation
     /// </summary>
     public class GMSSKeyTest : ITest
     {
         #region Constants
-        private const string DESCRIPTION = "Test the validity of the Rainbow Encryption Key implementation";
+        private const string DESCRIPTION = "Test the validity of the GMSS Encryption Key implementation";
         private const string FAILURE = "FAILURE! ";
         private const string SUCCESS = "SUCCESS! Encryption Key tests have executed succesfully.";
         #endregion
@@ -58,7 +58,7 @@ namespace Test.Tests
         #region Private Methods
         private void TestEncode()
         {
-            GMSSParameters mpar = GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P40);
+            GMSSParameters mpar = GMSSParamSets.FromName(GMSSParamSets.GMSSParamNames.N2P10);
             GMSSKeyGenerator mkgen = new GMSSKeyGenerator(mpar);
             IAsymmetricKeyPair akp = mkgen.GenerateKeyPair();
 

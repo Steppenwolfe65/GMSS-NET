@@ -36,8 +36,8 @@ using VTDev.Libraries.CEXEngine.Crypto.Enumeration;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
@@ -96,6 +96,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
     /// <item><description>High</description></item>
     /// <item><description>66</description></item>
     /// <item><description>27, 35, 43, 54</description></item>
+    /// </list>
     /// 
     /// <description><h4>Guiding Publications:</h4></description>
     /// <list type="number">
@@ -106,20 +107,23 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
     {
         #region Enums
         /// <summary>
-        /// Set id is defined as: N: coefficients, L: vinegar count
+        /// Set id is defined as: N: 2 <c>pow</c> base maximum signatures
         /// </summary>
         public enum GMSSParamNames : int
         {
             /// <summary>
-            /// Creates 2^10 (1024) signatures using the parameterset: H: 10, W: 3, K: 2 (P(2, (5, 5), (3, 3), (3, 3)))
+            /// Creates 2^10 (1024) signatures using the parameter set: (P(2, (5, 5), (3, 3), (3, 3)))
+            /// <para>H: 10, W: 3, K: 2, PublicKey Size: 36, PrivateKey Size: 1806</para>
             /// </summary>
             N2P10,
             /// <summary>
-            /// Creates 2^20 (1048576)  signatures using the parameterset H: 10,10, W: 5,4, K: 2,2 (P(2, (10, 10), (5, 4), (2, 2)))
+            /// Creates 2^20 (1048576) signatures using the parameter set: (P(2, (10, 10), (5, 4), (2, 2)))
+            /// <para>H: 10,10, W: 5,4, K: 2,2, PublicKey Size: 36, PrivateKey Size: 6846</para>
             /// </summary>
             N2P20,
             /// <summary>
-            /// Creates 2^40 (1099511627776) signatures using the parameterset H: 10, 10, 10, 10, W: 9, 9, 9, 3 K: 2, 2, 2, 2 (P(2, (10, 10, 10, 10), (9, 9, 9, 3), (2, 2, 2, 2)))
+            /// Creates 2^40 (1099511627776) signatures using the parameter set: (P(2, (10, 10, 10, 10), (9, 9, 9, 3), (2, 2, 2, 2)))
+            /// <para>H: 10, 10, 10, 10, W: 9, 9, 9, 3 K: 2, 2, 2, 2, PublicKey Size: 36, PrivateKey Size: 14534</para>
             /// </summary>
             N2P40
         }
@@ -206,17 +210,17 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         #region Parameter Sets
         /// <summary>
         /// Creates 2^10 (1024) signatures using the parameter set: (P(2, (5, 5), (3, 3), (3, 3)))
-        /// <para>MaxText:, H: 10, W: 3, K: 2, PublicKey Size: 36, PrivateKey Size: 1806</para>
+        /// <para>H: 10, W: 3, K: 2, PublicKey Size: 36, PrivateKey Size: 1806</para>
         /// </summary>
         public static GMSSParameters GMSSN2P10 = new GMSSParameters(new byte[] { 5, 1, 1, 1 }, 1, new int[] { 10 }, new int[] { 3 }, new int[] { 2 }, Digests.SHA256);
         /// <summary>
         /// Creates 2^20 (1048576) signatures using the parameter set: (P(2, (10, 10), (5, 4), (2, 2)))
-        /// <para>MaxText:, H: 10,10, W: 5,4, K: 2,2, PublicKey Size: 36, PrivateKey Size: 6846</para>
+        /// <para>H: 10,10, W: 5,4, K: 2,2, PublicKey Size: 36, PrivateKey Size: 6846</para>
         /// </summary>
         public static GMSSParameters GMSSN2P20 = new GMSSParameters(new byte[] { 5, 1, 2, 1 }, 2, new int[] { 10, 10 }, new int[] { 5, 4 }, new int[] { 2, 2 }, Digests.SHA256);
         /// <summary>
         /// Creates 2^40 (1099511627776) signatures using the parameter set: (P(2, (10, 10, 10, 10), (9, 9, 9, 3), (2, 2, 2, 2)))
-        /// <para>MaxText:, H: 10, 10, 10, 10, W: 9, 9, 9, 3 K: 2, 2, 2, 2, PublicKey Size: 36, PrivateKey Size: 14534</para>
+        /// <para>H: 10, 10, 10, 10, W: 9, 9, 9, 3 K: 2, 2, 2, 2, PublicKey Size: 36, PrivateKey Size: 14534</para>
         /// </summary>
         public static GMSSParameters GMSSN2P40 = new GMSSParameters(new byte[] { 5, 1, 3, 1 }, 4, new int[] { 10, 10, 10, 10 }, new int[] { 9, 9, 9, 3 }, new int[] { 2, 2, 2, 2 }, Digests.SHA256);
         #endregion

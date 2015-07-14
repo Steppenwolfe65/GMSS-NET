@@ -2,11 +2,10 @@
 using System;
 using System.IO;
 using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Interfaces;
-using VTDev.Libraries.CEXEngine.Exceptions;
 using VTDev.Libraries.CEXEngine.Crypto.Enumeration;
+using VTDev.Libraries.CEXEngine.Exceptions;
 using VTDev.Libraries.CEXEngine.Tools;
 using VTDev.Libraries.CEXEngine.Utility;
-using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS.Arithmetic;
 #endregion
 
 #region License Information
@@ -41,15 +40,15 @@ using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS.Arithmetic;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
 namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 {
     /// <summary>
-    /// Creates, reads and writes parameter settings for Rainbow.
+    /// Creates, reads and writes parameter settings for GMSS.
     /// <para>Predefined parameter sets are available through the <see cref="GMSSParamSets"/> class.</para>
     /// </summary>
     /// 
@@ -235,7 +234,13 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             }
         }
 
-        public GMSSParameters(int KeySize)
+        /// <summary>
+        /// Assign default H, W, and K values based on a Power of 2^10, 2^20, or 2^30 signatures scale.
+        /// <para>Ex. Values up to 10 creates 2^10 (1024) signatures, up to 20 2^20 (1048576) signatures, more than 20 = 2^40 (1099511627776) signatures created</para>
+        /// </summary>
+        /// 
+        /// <param name="KeySize">Can be 0-10 (2^10), 10-20 (2^20), or 20+ (2^40)</param>
+        public GMSSParameters(int KeySize = 10)
         {
             if (KeySize <= 10)
             {

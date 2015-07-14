@@ -6,7 +6,7 @@ using VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS;
 namespace Test.Tests
 {
     /// <summary>
-    /// Test the validity of the Rainbow signing operations
+    /// Test the validity of the GMSS signing operations
     /// </summary>
     public class GMSSSignTest : ITest
     {

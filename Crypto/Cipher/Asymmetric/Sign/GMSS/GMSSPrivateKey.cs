@@ -44,8 +44,8 @@ using System.Collections.Generic;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
@@ -670,29 +670,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             return new GMSSPrivateKey(KeyStream);
         }
 
-        internal int GetCurrentIndex(int Index)
-        {
-            return _index[Index];
-        }
-
-        internal int GetNumLeafs(int Index)
-        {
-            return _numLeafs[Index];
-        }
-
-        internal GMSSPrivateKey NextKey()
-        {
-            GMSSPrivateKey nKey = new GMSSPrivateKey(this);
-            nKey.NextKey(_gmssPS.NumLayers - 1);
-
-            return nKey;
-        }
-
-        internal byte[] SubtreeRootSig(int Index)
-        {
-            return _currentRootSig[Index];
-        }
-
         /// <summary>
         /// Converts the Private key to an encoded byte array
         /// </summary>
@@ -971,225 +948,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 
         #region Private Methods
         /// <summary>
-        /// This method updates the GMSS private key for the next signature
-        /// </summary>
-        /// 
-        /// <param name="Layer">The layer where the next key is processed</param>
-        private void NextKey(int Layer)
-        {
-            // only for lowest layer ( other layers indices are raised in NextTree() method )
-            if (Layer == _numLayer - 1)
-                _index[Layer]++;
-
-            // if tree of this layer is depleted
-            if (_index[Layer] == _numLeafs[Layer])
-            {
-                if (_numLayer != 1)
-                {
-                    NextTree(Layer);
-                    _index[Layer] = 0;
-                }
-            }
-            else
-            {
-                UpdateKey(Layer);
-            }
-        }
-
-        /// <summary>
-        /// Switch to next subtree if the current one is depleted
-        /// </summary>
-        /// 
-        /// <param name="Layer">The layer the layer where the next tree is processed</param>
-        private void NextTree(int Layer)
-        {
-            // dont create next tree for the top layer
-            if (Layer > 0)
-            {
-                // raise index for upper layer
-                _index[Layer - 1]++;
-
-                // test if it is already the last tree
-                bool lastTree = true;
-                int z = Layer;
-                do
-                {
-                    z--;
-                    if (_index[z] < _numLeafs[z])
-                        lastTree = false;
-                }
-                while (lastTree && (z > 0));
-
-                // only construct next subtree if last one is not already in use
-                if (!lastTree)
-                {
-                    _gmssRandom.NextSeed(_currentSeeds[Layer]);
-                    // last step of distributed signature calculation
-                    _nextRootSig[Layer - 1].UpdateSign();
-
-                    // last step of distributed leaf calculation for nextNextLeaf
-                    if (Layer > 1)
-                        _nextNextLeaf[Layer - 1 - 1] = _nextNextLeaf[Layer - 1 - 1].NextLeaf();
-
-                    // last step of distributed leaf calculation for upper leaf
-                    _upperLeaf[Layer - 1] = _upperLeaf[Layer - 1].NextLeaf();
-
-                    // last step of distributed leaf calculation for all treehashs
-                    if (_minTreehash[Layer - 1] >= 0)
-                    {
-                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
-                        byte[] leaf = _upperTreehashLeaf[Layer - 1].GetLeaf();
-                        // if update is required use the precomputed leaf to update treehash
-                        try
-                        {
-                            _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].Update(_gmssRandom, leaf);
-                        }
-                        catch (Exception e)
-                        {
-                        }
-                    }
-
-                    // last step of nextNextAuthRoot calculation
-                    UpdateNextNextAuthRoot(Layer);
-                    // NOW: advance to next tree on layer 'layer' NextRootSig --> currentRootSigs
-                    _currentRootSig[Layer - 1] = _nextRootSig[Layer - 1].GetSig();
-
-                    for (int i = 0; i < _heightOfTrees[Layer] - _K[Layer]; i++)
-                    {
-                        _currentTreehash[Layer][i] = _nextTreehash[Layer - 1][i];
-                        _nextTreehash[Layer - 1][i] = _nextNextRoot[Layer - 1].GetTreehash()[i];
-                    }
-
-                    for (int i = 0; i < _heightOfTrees[Layer]; i++)
-                    {
-                        Array.Copy(_nextAuthPaths[Layer - 1][i], 0, _currentAuthPaths[Layer][i], 0, _mdLength);
-                        Array.Copy(_nextNextRoot[Layer - 1].GetAuthPath()[i], 0, _nextAuthPaths[Layer - 1][i], 0, _mdLength);
-                    }
-
-                    for (int i = 0; i < _K[Layer] - 1; i++)
-                    {
-                        _currentRetain[Layer][i] = _nextRetain[Layer - 1][i];
-                        _nextRetain[Layer - 1][i] = _nextNextRoot[Layer - 1].GetRetain()[i];
-                    }
-
-                    _currentStack[Layer] = _nextStack[Layer - 1];
-                    _nextStack[Layer - 1] = _nextNextRoot[Layer - 1].GetStack();
-                    _nextRoot[Layer - 1] = _nextNextRoot[Layer - 1].GetRoot();
-                    byte[] OTSseed = new byte[_mdLength];
-                    byte[] dummy = new byte[_mdLength];
-                    Array.Copy(_currentSeeds[Layer - 1], 0, dummy, 0, _mdLength);
-                    OTSseed = _gmssRandom.NextSeed(dummy); // only need OTSSeed
-                    OTSseed = _gmssRandom.NextSeed(dummy);
-                    OTSseed = _gmssRandom.NextSeed(dummy);
-                    _nextRootSig[Layer - 1].InitSign(OTSseed, _nextRoot[Layer - 1]);
-                    // nextKey for upper layer
-                    NextKey(Layer - 1);
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method computes the authpath (AUTH) for the current tree.
-        /// Additionally the root signature for the next tree (SIG+), the authpath
-        /// (AUTH++) and root (ROOT++) for the tree after next in layer
-        /// <c>layer</c>, and the LEAF++^1 for the next next tree in the
-        /// layer above are updated This method is used by nextKey()
-        /// </summary>
-        /// 
-        /// <param name="Layer"></param>
-        private void UpdateKey(int Layer)
-        {
-            // current tree processing of actual layer //
-            // compute upcoming authpath for current Tree (AUTH)
-            ComputeAuthPaths(Layer);
-
-            // distributed calculations part //
-            // not for highest tree layer
-            if (Layer > 0)
-            {
-                // compute (partial) next leaf on TREE++ (not on layer 1 and 0)
-                if (Layer > 1)
-                    _nextNextLeaf[Layer - 1 - 1] = _nextNextLeaf[Layer - 1 - 1].NextLeaf();
-
-                // compute (partial) next leaf on tree above (not on layer 0)
-                _upperLeaf[Layer - 1] = _upperLeaf[Layer - 1].NextLeaf();
-                // compute (partial) next leaf for all treehashs on tree above (not on layer 0)
-                int t = (int)Math.Floor((double)(GetNumLeafs(Layer) * 2) / (double)(_heightOfTrees[Layer - 1] - _K[Layer - 1]));
-
-                if (_index[Layer] % t == 1)
-                {
-                    // take precomputed node for treehash update
-                    if (_index[Layer] > 1 && _minTreehash[Layer - 1] >= 0)
-                    {
-                        byte[] leaf = _upperTreehashLeaf[Layer - 1].GetLeaf();
-                        // if update is required use the precomputed leaf to update treehash
-                        try
-                        {
-                            _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].Update(_gmssRandom, leaf);
-                        }
-                        catch (Exception e)
-                        {
-                        }
-                    }
-
-                    // initialize next leaf precomputation //
-                    // get lowest index of treehashs
-                    _minTreehash[Layer - 1] = GetMinTreehashIndex(Layer - 1);
-
-                    if (_minTreehash[Layer - 1] >= 0)
-                    {
-                        // initialize leaf
-                        byte[] seed = _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].GetSeedActive();
-                        _upperTreehashLeaf[Layer - 1] = new GMSSLeaf(GetDigest(_msgDigestType), _otsIndex[Layer - 1], t, seed);
-                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
-                    }
-
-                }
-                else
-                {
-                    // update the upper leaf for the treehash one step
-                    if (_minTreehash[Layer - 1] >= 0)
-                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
-                }
-
-                // compute (partial) the signature of ROOT+ (RootSig+) (not on top layer)
-                _nextRootSig[Layer - 1].UpdateSign();
-                // compute (partial) AUTHPATH++ & ROOT++ (not on top layer)
-                // init root and authpath calculation for tree after next (AUTH++, ROOT++)
-                if (_index[Layer] == 1)
-                    _nextNextRoot[Layer - 1].Initialize(new List<byte[]>());
-
-                // update root and authpath calculation for tree after next (AUTH++, ROOT++)
-                UpdateNextNextAuthRoot(Layer);
-            }
-        }
-
-        /// <summary>
-        /// This method returns the index of the next Treehash instance that should receive an update
-        /// </summary>
-        /// 
-        /// <param name="Layer">The layer of the GMSS tree</param>
-        /// 
-        /// <returns>Return index of the treehash instance that should get the update</returns>
-        private int GetMinTreehashIndex(int Layer)
-        {
-            int minTreehash = -1;
-
-            for (int h = 0; h < _heightOfTrees[Layer] - _K[Layer]; h++)
-            {
-                if (_currentTreehash[Layer][h].IsInitialized() && !_currentTreehash[Layer][h].IsFinished())
-                {
-                    if (minTreehash == -1)
-                        minTreehash = h;
-                    else if (_currentTreehash[Layer][h].GetLowestNodeHeight() < _currentTreehash[Layer][minTreehash].GetLowestNodeHeight())
-                        minTreehash = h;
-                }
-            }
-
-            return minTreehash;
-        }
-
-        /// <summary>
         /// Computes the upcoming currentAuthpath of <c>layer</c> using the revisited authentication path computation of Dahmen/Schneider 2008
         /// </summary>
         /// 
@@ -1321,7 +1079,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
                             byte[] leaf = ots.GetPublicKey();
                             _currentTreehash[Layer][minTreehash].Update(_gmssRandom, leaf);
                         }
-                        catch (Exception e)
+                        catch
                         {
                         }
                     }
@@ -1334,54 +1092,9 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             }
         }
 
-        /// <summary>
-        /// Returns the largest h such that 2^h | Phi
-        /// </summary>
-        /// 
-        /// <param name="Phi">The leaf index</param>
-        /// 
-        /// <returns>Return The largest <c>h</c> with <c>2^h | Phi</c> if <c>Phi!=0</c> else return <c>-1</c></returns>
-        private int HeightOfPhi(int Phi)
+        internal int GetCurrentIndex(int Index)
         {
-            if (Phi == 0)
-                return -1;
-
-            int Tau = 0;
-            int modul = 1;
-
-            while (Phi % modul == 0)
-            {
-                modul *= 2;
-                Tau += 1;
-            }
-
-            return Tau - 1;
-        }
-
-        /// <summary>
-        /// Updates the authentication path and root calculation for the tree after next (AUTH++, ROOT++) in layer <c>layer</c>
-        /// </summary>
-        /// 
-        /// <param name="Layer">The layer</param>
-        private void UpdateNextNextAuthRoot(int Layer)
-        {
-
-            byte[] OTSseed = new byte[_mdLength];
-            OTSseed = _gmssRandom.NextSeed(_nextNextSeeds[Layer - 1]);
-
-            // get the necessary leaf
-            if (Layer == _numLayer - 1)
-            {
-                // lowest layer computes the necessary leaf completely at this time
-                WinternitzOTSignature ots = new WinternitzOTSignature(OTSseed, GetDigest(_msgDigestType), _otsIndex[Layer]);
-                _nextNextRoot[Layer - 1].Update(_nextNextSeeds[Layer - 1], ots.GetPublicKey());
-            }
-            else
-            {
-                // other layers use the precomputed leafs in nextNextLeaf
-                _nextNextRoot[Layer - 1].Update(_nextNextSeeds[Layer - 1], _nextNextLeaf[Layer - 1].GetLeaf());
-                _nextNextLeaf[Layer - 1].InitLeafCalc(_nextNextSeeds[Layer - 1]);
-            }
+            return _index[Index];
         }
 
         /// <summary>
@@ -1417,6 +1130,293 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
                     return new Skein1024();
                 default:
                     throw new CryptoAsymmetricException("GMSSPrivateKey:GetDigest", "The digest type is not supported!", new ArgumentException());
+            }
+        }
+
+        internal int GetNumLeafs(int Index)
+        {
+            return _numLeafs[Index];
+        }
+
+        /// <summary>
+        /// This method returns the index of the next Treehash instance that should receive an update
+        /// </summary>
+        /// 
+        /// <param name="Layer">The layer of the GMSS tree</param>
+        /// 
+        /// <returns>Return index of the treehash instance that should get the update</returns>
+        private int GetMinTreehashIndex(int Layer)
+        {
+            int minTreehash = -1;
+
+            for (int h = 0; h < _heightOfTrees[Layer] - _K[Layer]; h++)
+            {
+                if (_currentTreehash[Layer][h].IsInitialized() && !_currentTreehash[Layer][h].IsFinished())
+                {
+                    if (minTreehash == -1)
+                        minTreehash = h;
+                    else if (_currentTreehash[Layer][h].GetLowestNodeHeight() < _currentTreehash[Layer][minTreehash].GetLowestNodeHeight())
+                        minTreehash = h;
+                }
+            }
+
+            return minTreehash;
+        }
+
+        /// <summary>
+        /// Returns the largest h such that 2^h | Phi
+        /// </summary>
+        /// 
+        /// <param name="Phi">The leaf index</param>
+        /// 
+        /// <returns>Return The largest <c>h</c> with <c>2^h | Phi</c> if <c>Phi!=0</c> else return <c>-1</c></returns>
+        private int HeightOfPhi(int Phi)
+        {
+            if (Phi == 0)
+                return -1;
+
+            int Tau = 0;
+            int modul = 1;
+
+            while (Phi % modul == 0)
+            {
+                modul *= 2;
+                Tau += 1;
+            }
+
+            return Tau - 1;
+        }
+
+        internal GMSSPrivateKey NextKey()
+        {
+            GMSSPrivateKey nKey = new GMSSPrivateKey(this);
+            nKey.NextKey(_gmssPS.NumLayers - 1);
+
+            return nKey;
+        }
+
+        /// <summary>
+        /// This method updates the GMSS private key for the next signature
+        /// </summary>
+        /// 
+        /// <param name="Layer">The layer where the next key is processed</param>
+        private void NextKey(int Layer)
+        {
+            // only for lowest layer ( other layers indices are raised in NextTree() method )
+            if (Layer == _numLayer - 1)
+                _index[Layer]++;
+
+            // if tree of this layer is depleted
+            if (_index[Layer] == _numLeafs[Layer])
+            {
+                if (_numLayer != 1)
+                {
+                    NextTree(Layer);
+                    _index[Layer] = 0;
+                }
+            }
+            else
+            {
+                UpdateKey(Layer);
+            }
+        }
+
+        /// <summary>
+        /// Switch to next subtree if the current one is depleted
+        /// </summary>
+        /// 
+        /// <param name="Layer">The layer the layer where the next tree is processed</param>
+        private void NextTree(int Layer)
+        {
+            // dont create next tree for the top layer
+            if (Layer > 0)
+            {
+                // raise index for upper layer
+                _index[Layer - 1]++;
+
+                // test if it is already the last tree
+                bool lastTree = true;
+                int z = Layer;
+                do
+                {
+                    z--;
+                    if (_index[z] < _numLeafs[z])
+                        lastTree = false;
+                }
+                while (lastTree && (z > 0));
+
+                // only construct next subtree if last one is not already in use
+                if (!lastTree)
+                {
+                    _gmssRandom.NextSeed(_currentSeeds[Layer]);
+                    // last step of distributed signature calculation
+                    _nextRootSig[Layer - 1].UpdateSign();
+
+                    // last step of distributed leaf calculation for nextNextLeaf
+                    if (Layer > 1)
+                        _nextNextLeaf[Layer - 1 - 1] = _nextNextLeaf[Layer - 1 - 1].NextLeaf();
+
+                    // last step of distributed leaf calculation for upper leaf
+                    _upperLeaf[Layer - 1] = _upperLeaf[Layer - 1].NextLeaf();
+
+                    // last step of distributed leaf calculation for all treehashs
+                    if (_minTreehash[Layer - 1] >= 0)
+                    {
+                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
+                        byte[] leaf = _upperTreehashLeaf[Layer - 1].GetLeaf();
+                        // if update is required use the precomputed leaf to update treehash
+                        try
+                        {
+                            _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].Update(_gmssRandom, leaf);
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    // last step of nextNextAuthRoot calculation
+                    UpdateNextNextAuthRoot(Layer);
+                    // NOW: advance to next tree on layer 'layer' NextRootSig --> currentRootSigs
+                    _currentRootSig[Layer - 1] = _nextRootSig[Layer - 1].GetSig();
+
+                    for (int i = 0; i < _heightOfTrees[Layer] - _K[Layer]; i++)
+                    {
+                        _currentTreehash[Layer][i] = _nextTreehash[Layer - 1][i];
+                        _nextTreehash[Layer - 1][i] = _nextNextRoot[Layer - 1].GetTreehash()[i];
+                    }
+
+                    for (int i = 0; i < _heightOfTrees[Layer]; i++)
+                    {
+                        Array.Copy(_nextAuthPaths[Layer - 1][i], 0, _currentAuthPaths[Layer][i], 0, _mdLength);
+                        Array.Copy(_nextNextRoot[Layer - 1].GetAuthPath()[i], 0, _nextAuthPaths[Layer - 1][i], 0, _mdLength);
+                    }
+
+                    for (int i = 0; i < _K[Layer] - 1; i++)
+                    {
+                        _currentRetain[Layer][i] = _nextRetain[Layer - 1][i];
+                        _nextRetain[Layer - 1][i] = _nextNextRoot[Layer - 1].GetRetain()[i];
+                    }
+
+                    _currentStack[Layer] = _nextStack[Layer - 1];
+                    _nextStack[Layer - 1] = _nextNextRoot[Layer - 1].GetStack();
+                    _nextRoot[Layer - 1] = _nextNextRoot[Layer - 1].GetRoot();
+                    byte[] OTSseed = new byte[_mdLength];
+                    byte[] dummy = new byte[_mdLength];
+                    Array.Copy(_currentSeeds[Layer - 1], 0, dummy, 0, _mdLength);
+                    OTSseed = _gmssRandom.NextSeed(dummy); // only need OTSSeed
+                    OTSseed = _gmssRandom.NextSeed(dummy);
+                    OTSseed = _gmssRandom.NextSeed(dummy);
+                    _nextRootSig[Layer - 1].InitSign(OTSseed, _nextRoot[Layer - 1]);
+                    // nextKey for upper layer
+                    NextKey(Layer - 1);
+                }
+            }
+        }
+
+        internal byte[] SubtreeRootSig(int Index)
+        {
+            return _currentRootSig[Index];
+        }
+
+        /// <summary>
+        /// This method computes the authpath (AUTH) for the current tree.
+        /// Additionally the root signature for the next tree (SIG+), the authpath
+        /// (AUTH++) and root (ROOT++) for the tree after next in layer
+        /// <c>layer</c>, and the LEAF++^1 for the next next tree in the
+        /// layer above are updated This method is used by nextKey()
+        /// </summary>
+        /// 
+        /// <param name="Layer"></param>
+        private void UpdateKey(int Layer)
+        {
+            // current tree processing of actual layer //
+            // compute upcoming authpath for current Tree (AUTH)
+            ComputeAuthPaths(Layer);
+
+            // distributed calculations part //
+            // not for highest tree layer
+            if (Layer > 0)
+            {
+                // compute (partial) next leaf on TREE++ (not on layer 1 and 0)
+                if (Layer > 1)
+                    _nextNextLeaf[Layer - 1 - 1] = _nextNextLeaf[Layer - 1 - 1].NextLeaf();
+
+                // compute (partial) next leaf on tree above (not on layer 0)
+                _upperLeaf[Layer - 1] = _upperLeaf[Layer - 1].NextLeaf();
+                // compute (partial) next leaf for all treehashs on tree above (not on layer 0)
+                int t = (int)Math.Floor((double)(GetNumLeafs(Layer) * 2) / (double)(_heightOfTrees[Layer - 1] - _K[Layer - 1]));
+
+                if (_index[Layer] % t == 1)
+                {
+                    // take precomputed node for treehash update
+                    if (_index[Layer] > 1 && _minTreehash[Layer - 1] >= 0)
+                    {
+                        byte[] leaf = _upperTreehashLeaf[Layer - 1].GetLeaf();
+                        // if update is required use the precomputed leaf to update treehash
+                        try
+                        {
+                            _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].Update(_gmssRandom, leaf);
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    // initialize next leaf precomputation //
+                    // get lowest index of treehashs
+                    _minTreehash[Layer - 1] = GetMinTreehashIndex(Layer - 1);
+
+                    if (_minTreehash[Layer - 1] >= 0)
+                    {
+                        // initialize leaf
+                        byte[] seed = _currentTreehash[Layer - 1][_minTreehash[Layer - 1]].GetSeedActive();
+                        _upperTreehashLeaf[Layer - 1] = new GMSSLeaf(GetDigest(_msgDigestType), _otsIndex[Layer - 1], t, seed);
+                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
+                    }
+
+                }
+                else
+                {
+                    // update the upper leaf for the treehash one step
+                    if (_minTreehash[Layer - 1] >= 0)
+                        _upperTreehashLeaf[Layer - 1] = _upperTreehashLeaf[Layer - 1].NextLeaf();
+                }
+
+                // compute (partial) the signature of ROOT+ (RootSig+) (not on top layer)
+                _nextRootSig[Layer - 1].UpdateSign();
+                // compute (partial) AUTHPATH++ & ROOT++ (not on top layer)
+                // init root and authpath calculation for tree after next (AUTH++, ROOT++)
+                if (_index[Layer] == 1)
+                    _nextNextRoot[Layer - 1].Initialize(new List<byte[]>());
+
+                // update root and authpath calculation for tree after next (AUTH++, ROOT++)
+                UpdateNextNextAuthRoot(Layer);
+            }
+        }
+
+        /// <summary>
+        /// Updates the authentication path and root calculation for the tree after next (AUTH++, ROOT++) in layer <c>layer</c>
+        /// </summary>
+        /// 
+        /// <param name="Layer">The layer</param>
+        private void UpdateNextNextAuthRoot(int Layer)
+        {
+
+            byte[] OTSseed = new byte[_mdLength];
+            OTSseed = _gmssRandom.NextSeed(_nextNextSeeds[Layer - 1]);
+
+            // get the necessary leaf
+            if (Layer == _numLayer - 1)
+            {
+                // lowest layer computes the necessary leaf completely at this time
+                WinternitzOTSignature ots = new WinternitzOTSignature(OTSseed, GetDigest(_msgDigestType), _otsIndex[Layer]);
+                _nextNextRoot[Layer - 1].Update(_nextNextSeeds[Layer - 1], ots.GetPublicKey());
+            }
+            else
+            {
+                // other layers use the precomputed leafs in nextNextLeaf
+                _nextNextRoot[Layer - 1].Update(_nextNextSeeds[Layer - 1], _nextNextLeaf[Layer - 1].GetLeaf());
+                _nextNextLeaf[Layer - 1].InitLeafCalc(_nextNextSeeds[Layer - 1]);
             }
         }
         #endregion

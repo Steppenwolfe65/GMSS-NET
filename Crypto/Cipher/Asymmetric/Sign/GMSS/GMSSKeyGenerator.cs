@@ -44,8 +44,8 @@ using System.Collections.Generic;
 // <see href="http://bouncycastle.org/latest_releases.html">Release 1.51</see> version.
 // 
 // Implementation Details:
-// An implementation of an Generalized Merkle Signature Scheme Asymmetric Signature Scheme. 
-// Written by John Underhill, July 06, 2014
+// An implementation of an Generalized Merkle Signature Scheme. 
+// Written by John Underhill, July 06, 2015
 // contact: develop@vtdev.com
 #endregion
 
@@ -58,7 +58,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
     /// <example>
     /// <description>Example of creating a keypair:</description>
     /// <code>
-    /// GMSSKeyGenerator encParams = GMSSParamSets.GMSSN49L5;
+    /// GMSSKeyGenerator encParams = (GMSSParameters)GMSSParamSets.GMSSN2P10.DeepCopy();
     /// GMSSKeyGenerator keyGen = new GMSSKeyGenerator(encParams);
     /// IAsymmetricKeyPair keyPair = keyGen.GenerateKeyPair();
     /// </code>
@@ -91,7 +91,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         #region Fields
         private bool _isDisposed;
         private GMSSParameters _gmssParams;
-        private IDigest _rngEngine;
         // The source of randomness for OTS private key generation
         private GMSSRandom _gmssRand;
         // The hash function used for the construction of the authentication trees
@@ -106,8 +105,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         private int _mdLength;
         // the number of Layers
         private int _numLayer;
-        // Flag indicating if the class already has been initialized
-        private bool _isInitialized = false;
         // An array of the heights of the authentication trees of each layer
         private int[] _heightOfTrees;
         // An array of the Winternitz parameter 'w' of each layer
@@ -120,6 +117,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         #endregion
 
         #region Properties
+
         /// <summary>
         /// Get: Generator name
         /// </summary>
@@ -162,7 +160,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         /// 
         /// <param name="CiphersParams">The GMSSParameters instance containing the cipher settings</param>
         /// <param name="RngEngine">An initialized random generator instance</param>
-        public GMSSKeyGenerator(GMSSParameters CiphersParams, IRandom RngEngine, bool Parallel = true)
+        public GMSSKeyGenerator(GMSSParameters CiphersParams, IRandom RngEngine)
         {
             _gmssParams = CiphersParams;
             _msgDigestType = CiphersParams.DigestEngine;
@@ -252,7 +250,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
                         tree = GenerateCurrentAuthpathAndRoot(currentRoots[h + 1], currentStack[h], seeds[h], h);
 
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 
@@ -405,7 +403,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
         /// <summary>
         /// Initalizes the key pair generator using a parameter set as input
         /// </summary>
-        public void Initialize()
+        private void Initialize()
         {
             _numLayer = _gmssParams.NumLayers;
             _heightOfTrees = _gmssParams.HeightOfTrees;
@@ -422,8 +420,6 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
                 _rndEngine.GetBytes(_currentSeeds[i]);
                 _gmssRand.NextSeed(_currentSeeds[i]);
             }
-
-            _isInitialized = true;
         }
 
         /// <summary>
@@ -513,20 +509,15 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
             {
                 try
                 {
-                    if (_gmssParams != null)
-                    {
-                        _gmssParams.Dispose();
-                        _gmssParams = null;
-                    }
-                    if (_rngEngine != null)
-                    {
-                        _rngEngine.Dispose();
-                        _rngEngine = null;
-                    }
                     if (_gmssRand != null)
                     {
                         _gmssRand.Dispose();
                         _gmssRand = null;
+                    }
+                    if (_rndEngine != null)
+                    {
+                        _rndEngine.Dispose();
+                        _rndEngine = null;
                     }
                     if (_msDigestTree != null)
                     {
