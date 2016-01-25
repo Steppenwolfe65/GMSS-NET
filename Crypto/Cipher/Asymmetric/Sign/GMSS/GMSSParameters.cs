@@ -467,11 +467,11 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 
             GMSSParameters other = (GMSSParameters)Obj;
 
-            if (!Compare.AreEqual(_heightOfTrees, other.HeightOfTrees))
+            if (!Compare.IsEqual(_heightOfTrees, other.HeightOfTrees))
                 return false;
-            if (!Compare.AreEqual(_winternitzParameter, other.WinternitzParameter))
+            if (!Compare.IsEqual(_winternitzParameter, other.WinternitzParameter))
                 return false;
-            if (!Compare.AreEqual(_K, other.K))
+            if (!Compare.IsEqual(_K, other.K))
                 return false;
             if (_numLayers != other.NumLayers)
                 return false;

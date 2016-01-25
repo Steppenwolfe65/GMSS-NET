@@ -81,8 +81,9 @@ namespace Test.Tests
                 if (!sgn.Verify(data, 0, data.Length, code))
                     throw new Exception("RLWESignTest: Sign operation failed!");
 
-                // sign and test stream ctor
-                sgn.Initialize(akp.PrivateKey);
+                // get the next available key (private sub-key is used only once)
+                GMSSPrivateKey nk = ((GMSSPrivateKey)akp.PrivateKey).NextKey();
+                sgn.Initialize(nk);
                 code = sgn.Sign(new MemoryStream(data));
                 // verify the signature
                 sgn.Initialize(akp.PublicKey);

@@ -233,7 +233,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 
             GMSSPublicKey other = (GMSSPublicKey)Obj;
 
-            if (!Compare.AreEqual(_publicKey, other.PublicKey))
+            if (!Compare.IsEqual(_publicKey, other.PublicKey))
                 return false;
 
             return true;

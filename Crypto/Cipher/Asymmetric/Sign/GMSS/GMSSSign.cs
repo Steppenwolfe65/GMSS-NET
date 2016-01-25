@@ -536,7 +536,7 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Asymmetric.Sign.GMSS
 
             // now help contains the root of the maintree
             // test if help is equal to the GMSS public key
-            if (Compare.AreEqual(_pubKeyBytes, help))
+            if (Compare.IsEqual(_pubKeyBytes, help))
                 success = true;
 
             return success;

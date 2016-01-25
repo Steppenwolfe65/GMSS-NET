@@ -50,19 +50,5 @@ namespace VTDev.Libraries.CEXEngine.Crypto.Cipher.Symmetric.Stream
         /// 
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown if the input and output arrays do not align or are too small</exception>
         void Transform(byte[] Input, int InOffset, byte[] Output, int OutOffset);
-
-        /// <summary>
-        /// Encrypt/Decrypt an array of bytes with offset and length parameters.
-        /// <para><see cref="Initialize(KeyParams)"/> must be called before this method can be used.</para>
-        /// </summary>
-        /// 
-        /// <param name="Input">Bytes to Encrypt</param>
-        /// <param name="InOffset">Offset in the Input array</param>
-        /// <param name="Length">Length of data to process</param>
-        /// <param name="Output">Encrypted bytes</param>
-        /// <param name="OutOffset">Offset in the Output array</param>
-        /// 
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown if input array is smaller then the ouput array</exception>
-        void Transform(byte[] Input, int InOffset, int Length, byte[] Output, int OutOffset);
     }
 }

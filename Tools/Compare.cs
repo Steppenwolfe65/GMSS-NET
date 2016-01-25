@@ -47,7 +47,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(BigDecimal[] A, BigDecimal[] B)
+        public static bool IsEqual(BigDecimal[] A, BigDecimal[] B)
         {
             for (int i = 0; i < A.Length; i++)
             {
@@ -65,7 +65,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(BigInteger[] A, BigInteger[] B)
+        public static bool IsEqual(BigInteger[] A, BigInteger[] B)
         {
             for (int i = 0; i < A.Length; i++)
             {
@@ -83,7 +83,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(byte[] A, byte[] B)
+        public static bool IsEqual(byte[] A, byte[] B)
         {
             int i = A.Length;
 
@@ -108,7 +108,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(char[] A, char[] B)
+        public static bool IsEqual(char[] A, char[] B)
         {
             int i = A.Length;
 
@@ -133,7 +133,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(short[] A, short[] B)
+        public static bool IsEqual(short[] A, short[] B)
         {
             int i = A.Length;
 
@@ -158,7 +158,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(int[] A, int[] B)
+        public static bool IsEqual(int[] A, int[] B)
         {
             int i = A.Length;
 
@@ -184,7 +184,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// 
         /// <returns>Equal</returns>
         [System.CLSCompliant(false)]
-        public static bool AreEqual(uint[] A, uint[] B)
+        public static bool IsEqual(uint[] A, uint[] B)
         {
             int i = A.Length;
 
@@ -209,7 +209,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(long[] A, long[] B)
+        public static bool IsEqual(long[] A, long[] B)
         {
             int i = A.Length;
 
@@ -235,7 +235,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// 
         /// <returns>Equal</returns>
         [System.CLSCompliant(false)]
-        public static bool AreEqual(ulong[] A, ulong[] B)
+        public static bool IsEqual(ulong[] A, ulong[] B)
         {
             int i = A.Length;
 
@@ -260,7 +260,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(float[] A, float[] B)
+        public static bool IsEqual(float[] A, float[] B)
         {
             int i = A.Length;
 
@@ -285,7 +285,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// <param name="B">Array B</param>
         /// 
         /// <returns>Equal</returns>
-        public static bool AreEqual(double[] A, double[] B)
+        public static bool IsEqual(double[] A, double[] B)
         {
             int i = A.Length;
 
@@ -313,7 +313,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
         /// 
         /// <returns>Equal</returns>
         [System.CLSCompliant(false)]
-        public static bool AreEqual<T>(T[][] A, T[][] B)
+        public static bool IsEqual<T>(T[][] A, T[][] B)
         {
             int len = A.Length;
 
@@ -323,7 +323,7 @@ namespace VTDev.Libraries.CEXEngine.Tools
             while (len != 0)
             {
                 --len;
-                if (!AreEqual(A, B))
+                if (!IsEqual(A, B))
                     return false;
             }
 

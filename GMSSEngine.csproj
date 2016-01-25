@@ -152,6 +152,7 @@
     <Compile Include="Crypto\Generator\PBKDF2.cs" />
     <Compile Include="Crypto\Generator\PKCS5.cs" />
     <Compile Include="Crypto\Generator\SP20Drbg.cs" />
+    <Compile Include="Crypto\Helper\DigestFromName.cs" />
     <Compile Include="Crypto\Mac\HMAC.cs" />
     <Compile Include="Crypto\Mac\IMac.cs" />
     <Compile Include="Crypto\Mac\SHA256HMAC.cs" />

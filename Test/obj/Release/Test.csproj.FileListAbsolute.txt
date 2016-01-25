@@ -12,10 +12,3 @@ C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\Rainbow\Test\bi
 C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\Rainbow\Test\bin\Release\RLWEEngine.dll
 C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\Rainbow\Test\bin\Release\RLWEEngine.pdb
 C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\Rainbow\Test\obj\Release\Test.csprojResolveAssemblyReference.cache
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\bin\Release\Test.exe
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\bin\Release\Test.pdb
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\bin\Release\RLWEEngine.dll
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\bin\Release\RLWEEngine.pdb
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\obj\Release\Test.csprojResolveAssemblyReference.cache
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\obj\Release\Test.exe
-C:\Users\John\Documents\Visual Studio 2010\Projects\Cryptography\GMSS\Test\obj\Release\Test.pdb
